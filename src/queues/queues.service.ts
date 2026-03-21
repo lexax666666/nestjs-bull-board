@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { QUEUE_AMZ_ORDERS, QUEUE_AMZ_TRANSACTIONS } from './constants';
+import {
+  QUEUE_AMZ_ORDERS,
+  QUEUE_AMZ_TRANSACTIONS,
+  QUEUE_EMAILS,
+} from './constants';
 
 @Injectable()
 export class QueuesService {
@@ -9,6 +13,7 @@ export class QueuesService {
     @InjectQueue(QUEUE_AMZ_ORDERS) private readonly amzOrdersQueue: Queue,
     @InjectQueue(QUEUE_AMZ_TRANSACTIONS)
     private readonly amzTransactionsQueue: Queue,
+    @InjectQueue(QUEUE_EMAILS) private readonly emailsQueue: Queue,
   ) {}
 
   async addAmzOrdersSyncJob(data: {
@@ -33,5 +38,25 @@ export class QueuesService {
       backoff: { type: 'exponential', delay: 1000 },
     });
     return { jobId: job.id, queue: QUEUE_AMZ_TRANSACTIONS };
+  }
+
+  async addCreateEmailsJob(data: {
+    userId: string;
+    templateId: string;
+    recipients: string[];
+  }) {
+    const job = await this.emailsQueue.add('create-emails', data, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 1000 },
+    });
+    return { jobId: job.id, queue: QUEUE_EMAILS };
+  }
+
+  async addSendEmailsJob(data: { userId: string; emailIds: string[] }) {
+    const job = await this.emailsQueue.add('send-emails', data, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 1000 },
+    });
+    return { jobId: job.id, queue: QUEUE_EMAILS };
   }
 }

@@ -18,4 +18,18 @@ export class QueuesController {
   ) {
     return this.queuesService.addAmzTransactionsSyncJob(data);
   }
+
+  @Post('emails/create')
+  async triggerCreateEmails(
+    @Body() data: { userId: string; templateId: string; recipients: string[] },
+  ) {
+    return this.queuesService.addCreateEmailsJob(data);
+  }
+
+  @Post('emails/send')
+  async triggerSendEmails(
+    @Body() data: { userId: string; emailIds: string[] },
+  ) {
+    return this.queuesService.addSendEmailsJob(data);
+  }
 }
