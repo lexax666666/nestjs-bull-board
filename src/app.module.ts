@@ -5,9 +5,11 @@ import { ExpressAdapter } from '@bull-board/express';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { QueuesModule } from './queues/queues.module';
+import { DrizzleModule } from './drizzle/drizzle.module';
 
 @Module({
   imports: [
+    DrizzleModule,
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST ?? 'localhost',
